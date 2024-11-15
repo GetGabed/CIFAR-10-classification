@@ -17,7 +17,7 @@ def subset(dataset, sample_per_class):
 
     return Subset(dataset, indices)
 
-def transforms():
+def transformsResize():
     # Define transformations: resize to 224x224 and normalize
     return transforms.Compose([
         transforms.Resize((224, 224)),  # Resizes images to 224x224 for ResNet
@@ -28,7 +28,7 @@ def transforms():
 
 def load(sample_per_class=500, batch_size=32):
     # Load the dataset
-    transforms = transforms()
+    transforms = transformsResize()
 
     # Load CIFAR-10 dataset
     train_dataset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transforms)
