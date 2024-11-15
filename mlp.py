@@ -82,7 +82,7 @@ def run_mlp():
 
     # Train Model
     print("Training MLP...")
-    for epoch in range(10):  # Adjust the number of epochs as needed
+    for epoch in range(10):
         train_mlp(model, train_loader, criterion, optimizer, device)
         print(f"Epoch {epoch + 1}/10 completed.")
 
