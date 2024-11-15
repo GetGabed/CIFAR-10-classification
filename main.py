@@ -1,6 +1,6 @@
 from naive_bayes import run_naive_bayes
 # from decision_tree import run_decision_tree
-# from mlp import run_mlp
+from mlp import run_mlp
 # from cnn import run_cnn
 
 def main():
@@ -16,7 +16,7 @@ def main():
 
     # Run Multi-Layer Perceptron
     print("\nRunning Multi-Layer Perceptron...")
-    # mlp_results = run_mlp()
+    mlp_results = run_mlp()
 
     # Run Convolutional Neural Network
     print("\nRunning Convolutional Neural Network...")
@@ -27,7 +27,7 @@ def main():
     for model_name, metrics in [
         ("Naive Bayes", naive_bayes_results),
         # ("Decision Tree", decision_tree_results),
-        # ("MLP", mlp_results),
+        ("MLP", mlp_results),
         # ("CNN", cnn_results),
     ]:
         print(f"\n{model_name} Results:")
