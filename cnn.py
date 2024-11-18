@@ -1,3 +1,5 @@
+import os
+import pickle
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -6,6 +8,8 @@ from torchvision.datasets import CIFAR10
 from torch.utils.data import DataLoader
 
 # Define the VGG11 architecture
+
+
 class VGG11(nn.Module):
     def __init__(self, num_classes=10):
         super(VGG11, self).__init__()
@@ -61,9 +65,11 @@ class VGG11(nn.Module):
 
     def _get_flattened_size(self):
         """Perform a forward pass with a dummy input to calculate the flattened size."""
-        dummy_input = torch.zeros(1, 3, 224, 224)  # Batch size of 1, 3 color channels, 224x224 image
+        dummy_input = torch.zeros(
+            1, 3, 224, 224)  # Batch size of 1, 3 color channels, 224x224 image
         output = self.features(dummy_input)
-        return output.view(1, -1).size(1)  # Flatten the output to calculate the size
+        # Flatten the output to calculate the size
+        return output.view(1, -1).size(1)
 
     def forward(self, x):
         x = self.features(x)
@@ -72,6 +78,8 @@ class VGG11(nn.Module):
         return x
 
 # Training function
+
+
 def train_model(model, train_loader, criterion, optimizer, device):
     model.train()
     for images, labels in train_loader:
@@ -105,31 +113,46 @@ def evaluate_model(model, test_loader, device):
 
 
 # Main function to run CNN
-def run_cnn():
+def run_cnn(save_path="models/cnn"):
+    os.makedirs(save_path, exist_ok=True)
     # Load CIFAR-10 Dataset
     transform = transforms.Compose([
         transforms.Resize((224, 224)),  # Resize images to 224x224
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
+                             0.229, 0.224, 0.225]),
     ])
 
-    train_dataset = CIFAR10(root="./data", train=True, transform=transform, download=True)
-    test_dataset = CIFAR10(root="./data", train=False, transform=transform, download=True)
+    train_dataset = CIFAR10(root="./data", train=True,
+                            transform=transform, download=True)
+    test_dataset = CIFAR10(root="./data", train=False,
+                           transform=transform, download=True)
 
     train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
     # Initialize Model, Loss, and Optimizer
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"device used: {device}")
     model = VGG11(num_classes=10).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 
-    # Train the Model
-    print("Training VGG11...")
-    for epoch in range(10):
-        train_model(model, train_loader, criterion, optimizer, device)
-        print(f"Epoch {epoch + 1}/10 completed.")
+    # Check if a pre-trained model exists
+    model_path = os.path.join(save_path, "cnnvgg11_cifar10.pth")
+    if os.path.exists(model_path):
+        print("Loading pre-trained model...")
+        model.load_state_dict(torch.load(model_path, map_location=device))
+    else:
+        # Train the Model
+        print("Training VGG11...")
+        for epoch in range(10):
+            train_model(model, train_loader, criterion, optimizer, device)
+            print(f"Epoch {epoch + 1}/10 completed.")
+
+        # Save the trained model
+        torch.save(model.state_dict(), model_path)
+        print(f"Model saved to {model_path}")
 
     # Evaluate the Model
     print("Evaluating VGG11...")
@@ -139,7 +162,8 @@ def run_cnn():
     from sklearn.metrics import accuracy_score, precision_recall_fscore_support, confusion_matrix
 
     accuracy = accuracy_score(labels, preds)
-    precision, recall, f1, _ = precision_recall_fscore_support(labels, preds, average="weighted")
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        labels, preds, average="weighted")
     conf_matrix = confusion_matrix(labels, preds)
 
     print("Evaluation Results:")

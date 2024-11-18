@@ -1,3 +1,5 @@
+import os
+import pickle
 import numpy as np
 import torch
 from sklearn.tree import DecisionTreeClassifier
@@ -29,7 +31,8 @@ class CustomDecisionTree:
         for index in range(X.shape[1]):
             for value in np.unique(X[:, index]):
                 left, right = self.split(X, y, index, value)
-                gini_split = (len(left) / len(y)) * self.gini(left) + (len(right) / len(y)) * self.gini(right)
+                gini_split = (len(left) / len(y)) * self.gini(left) + \
+                    (len(right) / len(y)) * self.gini(right)
                 if gini_split < best_score:
                     best_index, best_value, best_score = index, value, gini_split
         return best_index, best_value
@@ -66,7 +69,8 @@ class CustomDecisionTree:
         return np.array([self.predict_single(self.tree, x) for x in X])
 
 
-def run_decision_tree():
+def run_decision_tree(save_path="models/decision_tree"):
+    os.makedirs(save_path, exist_ok=True)
     # Load Data
     train_loader, test_loader = load(sample_per_class=500, batch_size=32)
 
@@ -74,24 +78,45 @@ def run_decision_tree():
     resnet = get_resnet_feature_extractor()
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    train_features, train_labels = extract_features(resnet, train_loader, device)
+    train_features, train_labels = extract_features(
+        resnet, train_loader, device)
     test_features, test_labels = extract_features(resnet, test_loader, device)
 
     # PCA
-    train_features_reduced, pca_model = reduce_features_with_pca(train_features, n_components=50)
+    train_features_reduced, pca_model = reduce_features_with_pca(
+        train_features, n_components=50)
     test_features_reduced = pca_model.transform(test_features)
 
     # Custom Decision Tree
-    custom_tree = CustomDecisionTree(max_depth=50)
-    print("Training Custom Decision Tree...")
-    custom_tree.fit(train_features_reduced, train_labels)
+    custom_tree_path = os.path.join(save_path, "custom_tree.pkl")
+    if os.path.exists(custom_tree_path):
+        print(f"Loading Custom Decision Tree from {custom_tree_path}...")
+        with open(custom_tree_path, "rb") as f:
+            custom_tree = pickle.load(f)
+    else:
+        print("Training Custom Decision Tree...")
+        custom_tree = CustomDecisionTree(max_depth=50)
+        custom_tree.fit(train_features_reduced, train_labels)
+        with open(custom_tree_path, "wb") as f:
+            pickle.dump(custom_tree, f)
+
     print("Evaluating Custom Decision Tree...")
     y_pred_custom = custom_tree.predict(test_features_reduced)
 
     # Scikit-Learn Decision Tree
-    sklearn_tree = DecisionTreeClassifier(max_depth=50, criterion='gini')
-    print("Training Scikit-Learn Decision Tree...")
-    sklearn_tree.fit(train_features_reduced, train_labels)
+    sklearn_tree_path = os.path.join(save_path, "sklearn_tree.pkl")
+    if os.path.exists(sklearn_tree_path):
+        print(
+            f"Loading Scikit-Learn Decision Tree from {sklearn_tree_path}...")
+        with open(sklearn_tree_path, "rb") as f:
+            sklearn_tree = pickle.load(f)
+    else:
+        print("Training Scikit-Learn Decision Tree...")
+        sklearn_tree = DecisionTreeClassifier(max_depth=50, criterion='gini')
+        sklearn_tree.fit(train_features_reduced, train_labels)
+        with open(sklearn_tree_path, "wb") as f:
+            pickle.dump(sklearn_tree, f)
+
     print("Evaluating Scikit-Learn Decision Tree...")
     y_pred_sklearn = sklearn_tree.predict(test_features_reduced)
 
@@ -99,7 +124,8 @@ def run_decision_tree():
     results = {}
     for model_name, y_pred in [("Custom Tree", y_pred_custom), ("Scikit-Learn Tree", y_pred_sklearn)]:
         accuracy = accuracy_score(test_labels, y_pred)
-        precision, recall, f1, _ = precision_recall_fscore_support(test_labels, y_pred, average='weighted')
+        precision, recall, f1, _ = precision_recall_fscore_support(
+            test_labels, y_pred, average='weighted')
         conf_matrix = confusion_matrix(test_labels, y_pred)
         results[f"{model_name} Accuracy"] = accuracy
         results[f"{model_name} Precision"] = precision

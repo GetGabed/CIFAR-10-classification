@@ -7,11 +7,12 @@ from decision_tree import run_decision_tree
 from mlp import run_mlp
 from cnn import run_cnn
 
+
 def main():
     print("Starting Image Classification Project...")
 
-    print(f"Using device: {torch.cuda.get_device_name(0)}" if torch.cuda.is_available() else "Using device: CPU")
-
+    print(f"Using device: {torch.cuda.get_device_name(
+        0)}" if torch.cuda.is_available() else "Using device: CPU")
     # Start the total timer
     total_start_time = time.time()
 
@@ -65,6 +66,7 @@ def main():
     print(f"Time Taken for MLP: {mlp_time:.2f} minutes")
     print(f"Time Taken for CNN: {cnn_time:.2f} minutes")
     print(f"Total Time Taken: {total_time:.2f} minutes")
+
 
 if __name__ == "__main__":
     main()
