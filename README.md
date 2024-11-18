@@ -9,6 +9,16 @@
 
 This project is a classification model for the CIFAR-10 dataset. The steps include analyzing the dataset, preprocessing the images, and building four models: Naive Bayes, Decision Tree, Multi-Layer Perceptron, and Convolutional Neural Network using Python and PyTorch.
 
+## **Repository Structure**
+- `download.py`: Downloads the CIFAR-10 dataset and separates the necessary training and testing data.
+- `feature_extraction.py`:Pre-processes images (resize, normalize) and extracts 512-dimensional feature vectors using a pre-trained ResNet-18 model. PCA is applied to reduce the feature vectors to 50 dimensions.
+- `naive_bayes.py`:Implements Gaussian Naive Bayes classifiers using both custom code and Scikit-learn.
+- `decision_tree.py`:Implements Decision Tree classifiers using both custom code and Scikit-learn.
+- `mlp.py`:Defines and trains a Multi-Layer Perceptron (MLP) using PyTorch.
+- `cnn.py`:Implements and trains a VGG11-based Convolutional Neural Network (CNN) using PyTorch.
+- `main.py`: Script to execute all parts of the project, from data processing to model evaluation.
+- `models/`:Contains all saved models as well as variants of the main models.
+
 ## **Installation and Setup**
 
 1. **Clone the repository:**
@@ -21,36 +31,22 @@ This project is a classification model for the CIFAR-10 dataset. The steps inclu
 
 2. **Install dependencies:**
 
-   See dependencies at the bottom of the README.
+   ```
+   collections
+   numpy
+   sklearn
+   torch
+   torchvision
+   ```
 
-## Task Descriptions
+3. **Run the code**
+   - **Train the models**:
+      - Delete or save the models under `models/` in another folder.
+      - Run `python main.py`
+   - **Run the models**:
+      - Run `python main.py`
 
-### 1. Data Retrieval and Analysis
-
-- Retrieve the CIFAR-10 dataset using PyTorch's `torchvision.datasets` module.
-
-### 2. Data Preprocessing
-
-- Normalize the images to 224x224 pixels.
-- Feature extraction using a pre-trained ResNet-18 model.
-- Dimensionality reduction using PCA.
-
-### 3. Naive Bayes
-
-- Train a custom Naive Bayes model using the extracted features.
-
-To be continued...
-
-## Dependencies
-
-```
-collections
-numpy
-sklearn
-torch
-torchvision
-```
-
+   Please note: The entire training process takes around 50 minutes on a NVDIA RTX 3070 GPU with cuda activated.
 
 ## Example of output
 Starting Image Classification Project...\
